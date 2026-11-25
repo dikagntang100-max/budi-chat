@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1976d2">
+<title>Budi Chat</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#edf4fc;color:#172b4d}
+header{background:#1976d2;color:white;padding:18px;font-size:23px;font-weight:bold}
+header small{display:block;font-size:12px;font-weight:normal;margin-top:5px}
+main{max-width:650px;margin:auto;padding:16px}
+.card{background:white;padding:18px;border-radius:16px;margin-bottom:15px;box-shadow:0 3px 14px #18395d12}
+h2{font-size:19px;margin-top:0}
+input,textarea{width:100%;padding:12px;border:1px solid #d5e2f1;border-radius:10px;margin:7px 0;font-size:15px}
+button{background:#1976d2;color:white;border:0;padding:12px;border-radius:10px;font-weight:bold}
+.menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.menu button{min-height:70px}
+#result{white-space:pre-wrap;overflow-wrap:anywhere}
+.muted{color:#718198;font-size:13px;line-height:1.5}
+</style>
+</head>
+<body>
+<header>💬 Budi Chat
+<small>Terhubung bersama teman</small>
+</header>
+<main>
+<section class="card">
+<h2>Selamat datang!</h2>
+<p class="muted">Tampilan awal Budi Chat. Firebase belum dihubungkan.</p>
+<input id="nama" placeholder="Nama tampilan">
+<input id="username" placeholder="Username, contoh: budi123">
+<button onclick="simpanProfil()">Simpan profil lokal</button>
+<p id="profil" class="muted"></p>
+</section>
+
+<section class="card">
+<h2>Menu Budi Chat</h2>
+<div class="menu">
+<button onclick="buat('Chat pribadi')">💬 Chat pribadi</button>
+<button onclick="buat('Grup')">👥 Buat grup</button>
+<button onclick="buat('Channel')">📢 Buat channel</button>
+<button onclick="buat('Bot')">🤖 Menu bot</button>
+<button onclick="buat('Userbot')">⚙️ Menu userbot</button>
+<button onclick="buat('Profil')">👤 Profil</button>
+</div>
+</section>
+
+<section class="card">
+<h2 id="judul">Pusat aktivitas</h2>
+<p class="muted" id="deskripsi">Pilih menu untuk melihat keterangannya.</p>
+<div id="form"></div>
+</section>
+</main>
+
+<script>
+function simpanProfil(){
+ const nama=document.getElementById('nama').value.trim();
+ const username=document.getElementById('username').value.trim().replace(/^@/,'').toLowerCase();
+ if(!nama||!/^[a-z0-9_]{3,24}$/.test(username)){
+  alert('Isi nama dan username 3–24 karakter (huruf kecil, angka, underscore).');
+  return;
+ }
+ document.getElementById('profil').textContent=
+ 'Nama: '+nama+' | Username: @'+username+
+ '\nCatatan: profil ini hanya tersimpan di tampilan browser, belum di server.';
+}
+function buat(menu){
+ document.getElementById('judul').textContent=menu;
+ const info={
+ 'Chat pribadi':'Chat dengan pengguna lain akan aktif setelah Firebase dipasang.',
+ 'Grup':'Nantinya kamu dapat membuat grup dan mengundang anggota.',
+ 'Channel':'Nantinya pemilik channel dapat menerbitkan postingan.',
+ 'Bot':'Pembuatan token bot membutuhkan backend yang aman.',
+ 'Userbot':'Otomatisasi akun membutuhkan autentikasi dan backend.',
+ 'Profil':'Masukkan nama tampilan dan username pada bagian atas.'
+ };
+ document.getElementById('deskripsi').textContent=info[menu]||'';
+ document.getElementById('form').innerHTML=
+ '<p class="muted">Fitur '+menu+' belum terhubung ke Firebase.</p>';
+}
+</script>
+</body>
+  </html>
