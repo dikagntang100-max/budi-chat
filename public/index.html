@@ -1,85 +1,354 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1976d2">
 <title>Budi Chat</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#edf4fc;color:#172b4d}
-header{background:#1976d2;color:white;padding:18px;font-size:23px;font-weight:bold}
-header small{display:block;font-size:12px;font-weight:normal;margin-top:5px}
-main{max-width:650px;margin:auto;padding:16px}
-.card{background:white;padding:18px;border-radius:16px;margin-bottom:15px;box-shadow:0 3px 14px #18395d12}
-h2{font-size:19px;margin-top:0}
-input,textarea{width:100%;padding:12px;border:1px solid #d5e2f1;border-radius:10px;margin:7px 0;font-size:15px}
-button{background:#1976d2;color:white;border:0;padding:12px;border-radius:10px;font-weight:bold}
-.menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.menu button{min-height:70px}
-#result{white-space:pre-wrap;overflow-wrap:anywhere}
-.muted{color:#718198;font-size:13px;line-height:1.5}
+body{margin:0;background:#edf4fc;color:#183153;font-family:Arial,sans-serif}
+header{background:#1976d2;color:white;padding:17px;display:flex;justify-content:space-between;align-items:center}
+header strong{font-size:22px}
+header small{display:block;font-size:12px;margin-top:4px}
+main{max-width:720px;margin:auto;padding:15px}
+.card{background:white;padding:18px;border-radius:16px;margin-bottom:14px;box-shadow:0 3px 14px #173b6210}
+h2{font-size:19px;margin:0 0 13px}
+input,textarea{width:100%;padding:12px;border:1px solid #d6e2f0;border-radius:10px;margin:6px 0;font:inherit}
+button{border:0;border-radius:10px;background:#1976d2;color:white;padding:12px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.secondary{background:#e7f1ff;color:#145bb0}
+.danger{background:#c62828}
+.row{display:flex;gap:8px}
+.row>*{min-width:0;flex:1}
+.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.menu button{min-height:64px;font-size:13px}
+.muted{font-size:13px;color:#718198;line-height:1.5}
+.hidden{display:none!important}
+#status{padding:10px;border-radius:9px;background:#e8f2ff;font-size:13px;overflow-wrap:anywhere}
+#messages{height:320px;overflow-y:auto;background:#f5f8fc;border-radius:12px;padding:10px;margin:10px 0}
+.msg{background:white;border:1px solid #e2eaf5;padding:9px 12px;border-radius:12px;margin:8px 0;overflow-wrap:anywhere}
+.msg.mine{background:#dcecff;margin-left:25px}
+.msg small{display:block;color:#64748b;font-size:11px;margin-bottom:4px}
+#chatComposer{display:flex;gap:7px}
+#chatComposer input{flex:1;min-width:0}
+#chatComposer button{align-self:center}
 </style>
 </head>
 <body>
-<header>💬 Budi Chat
-<small>Terhubung bersama teman</small>
+<header>
+ <div><strong>💬 Budi Chat</strong><small>Terhubung bersama teman</small></div>
+ <button id="logout" class="secondary hidden">Keluar</button>
 </header>
+
 <main>
-<section class="card">
-<h2>Selamat datang!</h2>
-<p class="muted">Tampilan awal Budi Chat. Firebase belum dihubungkan.</p>
-<input id="nama" placeholder="Nama tampilan">
-<input id="username" placeholder="Username, contoh: budi123">
-<button onclick="simpanProfil()">Simpan profil lokal</button>
-<p id="profil" class="muted"></p>
-</section>
+ <div id="status">Menghubungkan aplikasi...</div>
 
-<section class="card">
-<h2>Menu Budi Chat</h2>
-<div class="menu">
-<button onclick="buat('Chat pribadi')">💬 Chat pribadi</button>
-<button onclick="buat('Grup')">👥 Buat grup</button>
-<button onclick="buat('Channel')">📢 Buat channel</button>
-<button onclick="buat('Bot')">🤖 Menu bot</button>
-<button onclick="buat('Userbot')">⚙️ Menu userbot</button>
-<button onclick="buat('Profil')">👤 Profil</button>
-</div>
-</section>
+ <section id="auth" class="card">
+  <h2 id="authTitle">Masuk ke Budi Chat</h2>
+  <p class="muted">Gunakan email dan password untuk masuk atau membuat akun.</p>
+  <input id="email" type="email" placeholder="Alamat email" autocomplete="email">
+  <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+  <div class="row">
+   <button id="login">Masuk</button>
+   <button id="register" class="secondary">Daftar</button>
+  </div>
+  <p class="muted">Gunakan email milikmu sendiri. Jangan bagikan password kepada siapa pun.</p>
+ </section>
 
-<section class="card">
-<h2 id="judul">Pusat aktivitas</h2>
-<p class="muted" id="deskripsi">Pilih menu untuk melihat keterangannya.</p>
-<div id="form"></div>
-</section>
+ <div id="app" class="hidden">
+  <section class="card">
+   <h2>👤 Profil</h2>
+   <input id="displayName" placeholder="Nama tampilan">
+   <input id="username" placeholder="Username, contoh: budi123">
+   <button id="saveProfile">Simpan profil</button>
+   <p id="profileInfo" class="muted"></p>
+  </section>
+
+  <section class="card">
+   <h2>Menu Budi Chat</h2>
+   <div class="menu">
+    <button data-page="chat">💬 Chat pribadi</button>
+    <button data-page="groups">👥 Grup</button>
+    <button data-page="channels">📢 Channel</button>
+    <button data-page="bots">🤖 Bot</button>
+    <button data-page="userbots">⚙️ Userbot</button>
+    <button data-page="profile">👤 Profil</button>
+   </div>
+  </section>
+
+  <section id="chatPage" class="card">
+   <h2>💬 Chat pribadi</h2>
+   <p class="muted">Cari username pengguna yang sudah terdaftar.</p>
+   <div class="row">
+    <input id="targetUsername" placeholder="Username teman">
+    <button id="openChat">Buka chat</button>
+   </div>
+   <p id="chatPartner" class="muted">Belum memilih teman.</p>
+   <div id="messages"></div>
+   <div id="chatComposer">
+    <input id="messageInput" placeholder="Tulis pesan..." maxlength="3000">
+    <button id="sendMessage">Kirim</button>
+   </div>
+  </section>
+
+  <section id="otherPage" class="card hidden">
+   <h2 id="otherTitle">Menu</h2>
+   <p id="otherDescription" class="muted"></p>
+  </section>
+ </div>
 </main>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 <script>
-function simpanProfil(){
- const nama=document.getElementById('nama').value.trim();
- const username=document.getElementById('username').value.trim().replace(/^@/,'').toLowerCase();
- if(!nama||!/^[a-z0-9_]{3,24}$/.test(username)){
-  alert('Isi nama dan username 3–24 karakter (huruf kecil, angka, underscore).');
-  return;
- }
- document.getElementById('profil').textContent=
- 'Nama: '+nama+' | Username: @'+username+
- '\nCatatan: profil ini hanya tersimpan di tampilan browser, belum di server.';
-}
-function buat(menu){
- document.getElementById('judul').textContent=menu;
- const info={
- 'Chat pribadi':'Chat dengan pengguna lain akan aktif setelah Firebase dipasang.',
- 'Grup':'Nantinya kamu dapat membuat grup dan mengundang anggota.',
- 'Channel':'Nantinya pemilik channel dapat menerbitkan postingan.',
- 'Bot':'Pembuatan token bot membutuhkan backend yang aman.',
- 'Userbot':'Otomatisasi akun membutuhkan autentikasi dan backend.',
- 'Profil':'Masukkan nama tampilan dan username pada bagian atas.'
+// GANTI NILAI DI BAWAH INI DENGAN CONFIG DARI FIREBASE CONSOLE
+const firebaseConfig = {
+  apiKey: "AIzaSyBsKlsABrsIAxy8_MiYlk1NljiCNsLQcuU",
+  authDomain: "budi-chat.firebaseapp.com",
+  projectId: "budi-chat",
+  storageBucket: "budi-chat.firebasestorage.app",
+  messagingSenderId: "65698455662",
+  appId: "1:65698455662:web:1e668045ce65959f44c67f"
+};
+
+const $ = id => document.getElementById(id);
+let auth, db, currentUser = null, activeChat = null;
+let stopMessages = null, stopAuth = null;
+let busy = false;
+
+function status(text) { $("status").textContent = text; }
+function errorText(e) {
+ const messages = {
+  "auth/email-already-in-use":"Email sudah terdaftar.",
+  "auth/invalid-email":"Format email tidak valid.",
+  "auth/weak-password":"Password terlalu lemah.",
+  "auth/invalid-credential":"Email atau password salah.",
+  "auth/too-many-requests":"Terlalu banyak percobaan. Coba lagi nanti.",
+  "permission-denied":"Akses ditolak. Periksa Firebase Security Rules."
  };
- document.getElementById('deskripsi').textContent=info[menu]||'';
- document.getElementById('form').innerHTML=
- '<p class="muted">Fitur '+menu+' belum terhubung ke Firebase.</p>';
+ return messages[e.code] || e.message || "Terjadi kesalahan.";
+}
+function setBusy(v) {
+ busy = v;
+ ["login","register","saveProfile","openChat","sendMessage"].forEach(id => $(id).disabled = v);
+}
+function validConfig() {
+ return firebaseConfig.apiKey !== "ISI_API_KEY" &&
+ firebaseConfig.authDomain !== "ISI_AUTH_DOMAIN" &&
+ firebaseConfig.projectId !== "ISI_PROJECT_ID" &&
+ firebaseConfig.appId !== "ISI_APP_ID";
+}
+
+if (!validConfig()) {
+ status("Masukkan konfigurasi Firebase milikmu di bagian firebaseConfig.");
+} else {
+ try {
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+
+  $("login").onclick = async () => {
+   if (busy) return;
+   try {
+    setBusy(true);
+    await auth.signInWithEmailAndPassword(
+      $("email").value.trim(), $("password").value
+    );
+   } catch(e) { status(errorText(e)); }
+   finally { setBusy(false); }
+  };
+
+  $("register").onclick = async () => {
+   if (busy) return;
+   try {
+    setBusy(true);
+    await auth.createUserWithEmailAndPassword(
+      $("email").value.trim(), $("password").value
+    );
+    status("Akun dibuat. Lengkapi profil dan username kamu.");
+   } catch(e) { status(errorText(e)); }
+   finally { setBusy(false); }
+  };
+
+  $("logout").onclick = async () => {
+   await auth.signOut();
+   activeChat = null;
+   if (stopMessages) stopMessages();
+   status("Kamu sudah keluar.");
+  };
+
+  stopAuth = auth.onAuthStateChanged(async user => {
+   currentUser = user;
+   $("auth").classList.toggle("hidden", !!user);
+   $("app").classList.toggle("hidden", !user);
+   $("logout").classList.toggle("hidden", !user);
+   if (!user) {
+    $("profileInfo").textContent = "";
+    $("messages").replaceChildren();
+    return;
+   }
+   try {
+    const doc = await db.collection("users").doc(user.uid).get();
+    if (auth.currentUser?.uid !== user.uid) return;
+    const p = doc.data() || {};
+    $("displayName").value = p.displayName || "";
+    $("username").value = p.username || "";
+    $("profileInfo").textContent = "Login sebagai " + user.email;
+    status("Berhasil masuk. Lengkapi profil kamu.");
+   } catch(e) { status(errorText(e)); }
+  });
+
+  $("saveProfile").onclick = async () => {
+   if (busy || !currentUser) return;
+   const displayName = $("displayName").value.trim();
+   const username = $("username").value.trim().replace(/^@/,"").toLowerCase();
+   if (!displayName || !/^[a-z0-9_]{3,24}$/.test(username)) {
+    status("Isi nama dan username 3–24 karakter (huruf kecil, angka, underscore).");
+    return;
+   }
+   try {
+    setBusy(true);
+    const uid = currentUser.uid;
+    await db.runTransaction(async tx => {
+     const userRef = db.collection("users").doc(uid);
+     const userSnap = await tx.get(userRef);
+     const oldUsername = userSnap.exists ? userSnap.data().username : null;
+     const nameRef = db.collection("usernames").doc(username);
+     const nameSnap = await tx.get(nameRef);
+
+     if (nameSnap.exists && nameSnap.data().uid !== uid)
+      throw new Error("Username sudah digunakan.");
+
+     if (oldUsername && oldUsername !== username) {
+      const oldRef = db.collection("usernames").doc(oldUsername);
+      const oldSnap = await tx.get(oldRef);
+      if (oldSnap.exists && oldSnap.data().uid === uid) tx.delete(oldRef);
+     }
+
+     tx.set(nameRef, {uid});
+     tx.set(userRef, {
+      uid, displayName, username, email: currentUser.email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+     }, {merge:true});
+    });
+    $("profileInfo").textContent = displayName + " · @" + username;
+    status("Profil berhasil disimpan.");
+   } catch(e) { status(errorText(e)); }
+   finally { setBusy(false); }
+  };
+
+  $("openChat").onclick = async () => {
+   if (busy || !currentUser) return;
+   const username = $("targetUsername").value.trim().replace(/^@/,"").toLowerCase();
+   if (!/^[a-z0-9_]{3,24}$/.test(username)) {
+    status("Masukkan username yang valid."); return;
+   }
+   try {
+    setBusy(true);
+    if (username === $("username").value.trim().toLowerCase()) {
+     status("Kamu tidak bisa memulai chat dengan akun sendiri."); return;
+    }
+    const nameDoc = await db.collection("usernames").doc(username).get();
+    if (!nameDoc.exists) { status("Username tidak ditemukan."); return; }
+    const otherUid = nameDoc.data().uid;
+    const otherDoc = await db.collection("users").doc(otherUid).get();
+    if (!otherDoc.exists) { status("Profil pengguna tidak ditemukan."); return; }
+
+    const members = [currentUser.uid, otherUid].sort();
+    const chatId = members.join("_");
+    const chatRef = db.collection("chats").doc(chatId);
+    await db.runTransaction(async tx => {
+     const snap = await tx.get(chatRef);
+     if (!snap.exists) {
+      tx.set(chatRef, {
+       members,
+       createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+     } else if (!Array.isArray(snap.data().members) ||
+                snap.data().members.length !== 2 ||
+                !members.every(x => snap.data().members.includes(x))) {
+      throw new Error("Data chat tidak valid.");
+     }
+    });
+
+    activeChat = chatId;
+    $("chatPartner").textContent =
+      "Chat dengan " + otherDoc.data().displayName + " (@" + username + ")";
+    if (stopMessages) stopMessages();
+    $("messages").replaceChildren();
+
+    stopMessages = chatRef.collection("messages")
+      .orderBy("createdAt","asc").limit(100)
+      .onSnapshot(snapshot => {
+       const box = $("messages");
+       box.replaceChildren();
+       snapshot.forEach(doc => {
+        const m = doc.data();
+        const item = document.createElement("div");
+        item.className = "msg" + (m.senderId === currentUser.uid ? " mine" : "");
+        const meta = document.createElement("small");
+        meta.textContent = m.senderId === currentUser.uid ? "Kamu" : username;
+        const body = document.createElement("div");
+        body.textContent = m.text || "";
+        item.append(meta, body);
+        box.appendChild(item);
+       });
+       box.scrollTop = box.scrollHeight;
+      }, e => status(errorText(e)));
+    status("Chat terbuka.");
+   } catch(e) { status(errorText(e)); }
+   finally { setBusy(false); }
+  };
+
+  async function send() {
+   if (busy || !currentUser || !activeChat) {
+    status("Pilih chat terlebih dahulu."); return;
+   }
+   const text = $("messageInput").value.trim();
+   if (!text) return;
+   try {
+    setBusy(true);
+    await db.collection("chats").doc(activeChat).collection("messages").add({
+     senderId: currentUser.uid,
+     text,
+     createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    $("messageInput").value = "";
+   } catch(e) { status(errorText(e)); }
+   finally { setBusy(false); }
+  }
+  $("sendMessage").onclick = send;
+  $("messageInput").addEventListener("keydown", e => {
+   if (e.key === "Enter") send();
+  });
+
+  document.querySelectorAll("[data-page]").forEach(btn => {
+   btn.onclick = () => {
+    const page = btn.dataset.page;
+    $("chatPage").classList.toggle("hidden", page !== "chat");
+    $("otherPage").classList.toggle("hidden", page === "chat");
+    const pages = {
+     groups:["Grup","Fitur grup belum dibuat."],
+     channels:["Channel","Fitur channel belum dibuat."],
+     bots:["Bot","Jangan menyimpan token bot rahasia di website. Fitur bot memerlukan backend."],
+     userbots:["Userbot","Fitur userbot belum dibuat. Autentikasi harus ditangani dengan aman."],
+     profile:["Profil","Ubah nama tampilan dan username pada bagian Profil."]
+    };
+    if (pages[page]) {
+     $("otherTitle").textContent = pages[page][0];
+     $("otherDescription").textContent = pages[page][1];
+    }
+   };
+  });
+ } catch(e) {
+  status("Firebase gagal dimulai: " + errorText(e));
+ }
 }
 </script>
 </body>
-  </html>
+</html>
